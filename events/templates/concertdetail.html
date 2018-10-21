@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}{{concert.name}} Detail{% endblock title %}
+
+{% block content %}
+
+<br>
+<div class="card">
+  <h5 class="card-header">Concert Info</h5>
+  <div class="card-body">
+    <h5 class="card-title">{{concert.name}}</h5>
+    <p class="card-text">Organized by: {{concert.organizer.name}}</p>
+    <p class="card-text">Concert of: {{concert.concert_of}}</p>
+    <p class="card-text">Capacity: {{concert.capacity}}</p>
+    <p class="card-text">{{concert.description|linebreaks}}</p>
+    <p class="card-text">Date: {{concert.start_date}}</p>
+    <p class="card-text">Starting Time: {{concert.start_time}}</p>
+    <p class="card-text">Ending Time: {{concert.end_time}}</p>
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Our Items</h5>
+  </div>
+ {#  <ul class="list-group list-group-flush">
+    {% for item in items %}
+      <li class="list-group-item">
+        <p><b>{{item.name}}</b></p>
+        <p>{{item.description|linebreaks}}</p>
+        <p>{{item.price}} KWD</p>
+      </li>
+    {% endfor %}
+  </ul> #}
+  <div class="card-body">
+    <div class="row text-center">
+      {% if request.user == concert.organizer %}
+        <div class="col-md-4">
+            <a href="{% url 'concert-update' concert.id %}" class="btn btn-outline-primary btn-block">Update</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

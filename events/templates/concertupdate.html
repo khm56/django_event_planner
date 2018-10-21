@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Update Concert{% endblock title %}
+
+{% block content %}
+<br>
+<div class="card">
+  <h5 class="card-header">Update: {{concert.name}}</h5>
+  <div class="card-body">
+    <p class="card-text">
+        <form action="{% url 'concert-update' concert_obj.id %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{form|crispy}}
+            <input type="submit" value="Update" class="btn btn-outline-primary">
+        </form>
+    </p>
+  </div>
+</div>
+{% endblock content %}
