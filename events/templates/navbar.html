@@ -1,6 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
   <div class="container">
-    <a class="navbar-brand" href="#">Django Event Planner</a>
+    <a class="navbar-brand" href="{% url 'home' %}">Home</a>
+    <a class="navbar-brand" href="{% url 'concert-list' %}">Events</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -18,7 +19,10 @@
           <a class="nav-link" href="{% url 'logout' %}">Log Out</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">{{ request.user }}</a>
+          <a class="nav-link" href="{% url 'concert-dashboard' %}">{{ request.user }}</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'profile-update' request.user.id %}">Profile Update</a>
         </li>
         {% endif %}
       </ul>

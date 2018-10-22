@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
+<br>
+<br>
 <header class="masthead text-center text-white">
   <div class="masthead-content">
     <div class="container">
-      <h1 class="masthead-heading mb-0">All the events,</h1>
-      <h2 class="masthead-subheading mb-0">You could ever want...</h2>
+      <h1 class="masthead-heading mb-0">Looking for a Concert,</h1>
+      <h2 class="masthead-subheading mb-0">You're in the right place...</h2>
       {% if request.user.is_anonymous %}
         <a href="{% url 'signup' %}" class="btn btn-primary btn-xl rounded-pill mt-5">Sign up to find events!</a>
       {% else %}
-        <a href="#" class="btn btn-primary btn-xl rounded-pill mt-5">Find events!</a>
+        <a href="{% url 'concert-list' %}" class="btn btn-primary btn-xl rounded-pill mt-5">Find Concerts!</a>
       {% endif %}
     </div>
   </div>

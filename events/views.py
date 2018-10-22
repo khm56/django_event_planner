@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.views import View
-from .forms import UserSignup, UserLogin, ConcertForm
-from .models import Concert
+from .forms import UserSignup, UserLogin, ConcertForm, UserUpdate
+from .models import Concert, AttendConcert, FollowedUser
 from django.contrib import messages
+from django.db.models import Q
+from django.http import JsonResponse
+from datetime import datetime, timedelta, timezone
+from django.contrib.auth.models import User
 
 def home(request):
     return render(request, 'home.html')
@@ -27,7 +31,6 @@ class Signup(View):
             return redirect("home")
         messages.warning(request, form.errors)
         return redirect("signup")
-
 
 class Login(View):
     form_class = UserLogin
@@ -62,7 +65,8 @@ class Logout(View):
         return redirect("login")
 
 def concert_list(request):
-    concerts = Concert.objects.all()
+    present= datetime.now()
+    concerts = Concert.objects.filter(start_date__gte=present, start_time__gte=present)
     query = request.GET.get('q')
     if query:
         concerts = concerts.filter(
@@ -72,22 +76,55 @@ def concert_list(request):
             Q(concert_of__icontains=query)
         ).distinct()
 
-    # favorite_list = []
-    # if request.user.is_authenticated:
-    #     favorite_list = request.user.favoriteconcert_set.all().values_list('concert', flat=True)
+    context = {
+       "concerts": concerts,
+    }
+    return render(request, 'list.html', context)
+
+def profiles(request):
+    users=User.objects.all()
+    contect = {
+        "users":users,
+    }
+
+
+def concert_dashboard(request):
+    present=datetime.now()
+
+    concerts = Concert.objects.filter(organizer=request.user)
+    attending = AttendConcert.objects.filter(user=request.user).filter(Q(concert__start_date__gte=present))
+    attended = AttendConcert.objects.filter(user=request.user).filter(Q(concert__start_date__lt=present))
+
+    query = request.GET.get('q')
+    if query:
+        concerts = concerts.filter(
+            Q(organizer__username__icontains=query)|
+            Q(name__icontains=query)|
+            Q(description__icontains=query)|
+            Q(concert_of__icontains=query)
+        ).distinct()
+
 
     context = {
        "concerts": concerts,
-       # "favorite_list": favorite_list
+       "attending": attending,
+       "attended": attended,
     }
     return render(request, 'dashboard.html', context)
 
 def concert_detail(request, concert_id):
-    concert = Concert.objects.get(id=concert_id)
-    # items = Item.objects.filter(concert=concert)
+    concerts = Concert.objects.get(id=concert_id)
+    booked= AttendConcert.objects.filter(concert=concerts)
+    if request.method == "POST":
+        quantity=request.POST.get("quantity")
+        AttendConcert.objects.create(quantity=quantity, user=request.user, concert=concerts)
+        concerts.capacity = int(concerts.capacity) - int(quantity)
+        concerts.save()
+        return redirect('concert-dashboard')
+
     context = {
-        "concert": concert,
-        # "items": items,
+        "concert": concerts,
+        "booked":booked,
     }
     return render(request, 'concertdetail.html', context)
 
@@ -96,7 +133,7 @@ def concert_create(request):
         return redirect('signin')
     form = ConcertForm()
     if request.method == "POST":
-        form = ConcertForm(request.POST, request.FILES)
+        form = ConcertForm(request.POST)
         if form.is_valid():
             concert = form.save(commit=False)
             concert.organizer = request.user
@@ -123,10 +160,34 @@ def concert_update(request, concert_id):
     }
     return render(request, 'concertupdate.html', context)
 
-# def concert_delete(request, concert_id):
-#     concert_obj = Concert.objects.get(id=concert_id)
-#     if not (request.user.is_staff or request.user == concert_obj.organizer ):
-#         return redirect('no-access')
-#     restaurant_obj.delete()
-#     return redirect('rconcert-dashboard')
+def profile_update(request, profile_id):
+    profile = User.objects.get(id=profile_id)
+    form = UserUpdate(instance=profile)
+    if request.method == "POST":
+        form = UserUpdate(request.POST, instance=profile)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(user.password)
+            user.save()
+            messages.success(request, "You have successfully Updated profile.")
+            return redirect('concert-dashboard')
+    context = {
+        "profile": profile,
+        "form":form,
+    }
+    return render(request, 'profileupdate.html', context)
+
+def unbook(request, attend_id):
+    booking_obj = AttendConcert.objects.get(user=request.user, id=attend_id)
+    present=datetime.now()
+    timeofevent=datetime.combine(booking_obj.concert.start_date, booking_obj.concert.start_time)
+    if (timeofevent- timedelta(hours=3)) <= present:
+        concert= Concert.objects.get(id=booking_obj.concert.id)
+        concert.capacity=int(concert.capacity)+int(booking_obj.quantity)
+        concert.save()
+        booking_obj.delete()
+    else:
+        messages.success(request, "It's too late to unbook")
+    return redirect('concert-dashboard')
+
 

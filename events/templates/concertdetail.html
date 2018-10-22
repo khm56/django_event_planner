@@ -5,38 +5,88 @@
 {% block content %}
 
 <br>
-<div class="card">
-  <h5 class="card-header">Concert Info</h5>
-  <div class="card-body">
-    <h5 class="card-title">{{concert.name}}</h5>
-    <p class="card-text">Organized by: {{concert.organizer.name}}</p>
-    <p class="card-text">Concert of: {{concert.concert_of}}</p>
-    <p class="card-text">Capacity: {{concert.capacity}}</p>
-    <p class="card-text">{{concert.description|linebreaks}}</p>
-    <p class="card-text">Date: {{concert.start_date}}</p>
-    <p class="card-text">Starting Time: {{concert.start_time}}</p>
-    <p class="card-text">Ending Time: {{concert.end_time}}</p>
-  </div>
-  <div class="card-body">
-    <h5 class="card-title">Our Items</h5>
-  </div>
- {#  <ul class="list-group list-group-flush">
-    {% for item in items %}
-      <li class="list-group-item">
-        <p><b>{{item.name}}</b></p>
-        <p>{{item.description|linebreaks}}</p>
-        <p>{{item.price}} KWD</p>
-      </li>
-    {% endfor %}
-  </ul> #}
-  <div class="card-body">
-    <div class="row text-center">
-      {% if request.user == concert.organizer %}
-        <div class="col-md-4">
-            <a href="{% url 'concert-update' concert.id %}" class="btn btn-outline-primary btn-block">Update</a>
-        </div>
-      {% endif %}
-    </div>
-  </div>
-</div>
+<br>
+<br>
+<br>
+<header class="masthead text-center text-black">
+	<div class="masthead-content">
+		<div class="container">
+			<div class="jumbotron">
+				<h2 class="masthead-subheading text-white mb-0">{{concert.name}}'s Details</h2>
+				<div class="card">
+					<h5 class="card-header dark">Concert Info</h5>
+					<div class="card-body">
+						<h5 class="card-title">{{concert.name}}</h5>
+						<p class="card-text">Organized by: {{concert.organizer.name}}</p>
+						<p class="card-text">Concert of: {{concert.concert_of}}</p>
+						<p class="card-text">Capacity Left: {{concert.capacity}}</p>
+						<p class="card-text">{{concert.description|linebreaks}}</p>
+						<p class="card-text">Date: {{concert.start_date}}</p>
+						<p class="card-text">Starting Time: {{concert.start_time}}</p>
+						<p class="card-text">Ending Time: {{concert.end_time}}</p>
+						<div class="row">
+							{% if request.user == concert.organizer %}
+								<div class="col-sm">
+								</div>
+								<div class="col-sm">
+									<a href="{% url 'concert-update' concert.id %}" class="btn btn-outline-primary btn-block">Update</a>
+								</div>
+								<div class="col-sm">
+								</div>
+									<br>
+							{% endif %}
+						</div>
+							<div class="row">
+								{% if request.user.is_authenticated %}
+									<div class="col-sm">
+									</div>
+									<div class="col-sm">
+										<form action="{% url 'concert-detail' concert.id %}" method="POST">
+											{% csrf_token %}
+											<br>Tickets:<input class="mb-3" type="number" name="quantity" max="{{concert.capacity}}">
+											{% if not concert.capacity == 0 %}
+												<br><button type="submit"  class="btn btn-outline-primary btn-block">Book</button>
+											{% else %}
+												<h3 style="color:red" >FULL!!</h3>
+											{% endif %}
+										</form>
+									</div>
+									<div class="col-sm">
+									</div>
+								{% endif %}
+								<br>
+							</div>
+							<br>
+							{% if request.user == concert.organizer %}
+								<div class="row">
+									<table class="table table-dark">
+										<thead>
+											<tr>
+												<th scope="col">#ID</th>
+												<th scope="col">Username</th>
+												<th scope="col">Quantity of Tickets</th>
+											</tr>
+										</thead>
+										<tbody>
+											{% for book in booked %}
+												<tr>
+													<td><a href="{% url 'concert-detail' book.concert.id %}">{{book.user.id}}</a></td>
+													<td><a href="{% url 'concert-detail' book.concert.id %}">{{book.user.username}}</a></td>
+													<td><a href="{% url 'concert-detail' book.concert.id %}">{{book.quantity}}</a></td>
+												</tr>
+											{% endfor %}
+										</tbody>
+									</table>
+								</div>
+						{% endif %}
+						</div>
+			</div>
+			</div>
+		</div>
+	</div>
+	<div class="bg-circle-1 bg-circle"></div>
+	<div class="bg-circle-2 bg-circle"></div>
+	<div class="bg-circle-3 bg-circle"></div>
+	<div class="bg-circle-4 bg-circle"></div>
+</header>
 {% endblock content %}
