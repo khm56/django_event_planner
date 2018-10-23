@@ -7,14 +7,14 @@
 <br>
 <header class="masthead text-center text-white">
   <div class="masthead-content">
-    <div class="container">
-        <div class="jumbotron">
+    <div class="container" >
+        <div class="jumbotron" style="background-color:rgba(76, 76, 76, 0.25)">
           <h2 class="masthead-subheading mb-0">Concerts</h2>
             <form action="{% url 'concert-list' %}">
               <div class="input-group mb-3">
                 <input type="text" class="form-control" placeholder="Search" aria-label="Search" name="q" value="{{request.GET.q}}">
                 <div class="input-group-append">
-                  <button class="btn btn-outline-secondary" type="submit">Search</button>
+                  <button class="btn btn-outline-dark" type="submit">Search</button>
                 </div>
               </div>
             </form>
@@ -33,16 +33,39 @@
                     <tbody>
                       {% for concert in concerts %}
                         <tr>
-                          <td><a href="{% url 'concert-detail' concert.id %}">{{concert.id}}</a></td>
-                          <td><a href="{% url 'concert-detail' concert.id %}">{{concert.name}}</a></td>
-                          <td><a href="{% url 'concert-detail' concert.id %}">{{concert.organizer.username}}</a></td>
-                          <td><a href="{% url 'concert-detail' concert.id %}">{{concert.concert_of}}</a></td>
-                          <td><a href="{% url 'concert-detail' concert.id %}">{{concert.capacity}}</a></td>
+                          <td><a class="text-warning" href="{% url 'concert-detail' concert.id %}">{{concert.id}}</a></td>
+                          <td><a class="text-warning" href="{% url 'concert-detail' concert.id %}">{{concert.name}}</a></td>
+                          <td><a class="text-warning" href="{% url 'concert-detail' concert.id %}">{{concert.organizer.username}}</a></td>
+                          <td><a class="text-warning" href="{% url 'concert-detail' concert.id %}">{{concert.concert_of}}</a></td>
+                          <td><a class="text-warning" href="{% url 'concert-detail' concert.id %}">{{concert.capacity}}</a></td>
                         </tr>
                       {% endfor %}
                     </tbody>
                   </table>
                 </div>
+              </div>
+              <div>
+                {% if request.user.is_authenticated %}
+                  <div class="row">
+                  {% for user in users %}
+                      <div class="col-md-3">
+                        <div class="card rounded-circle w-75 border-danger" style="background-color:rgb(235,103,58)" >
+                          <div class="card-body">
+                            <h5 class="card-title" style="color:black">Organizer:</h5>
+                            <h5 class="card-title" style="color:black">{{user.username}}</h5>
+                            <p class="card-text">
+                              <div class="float-center">
+                                <i id="user-{{user.id}}"
+                                  class="fas {% if user.id in follow_list %}text-primary fa-user-plus{% else %} text-danger fa-user-minus{% endif %}"
+                                  onclick="follow_user({{user.id}})"></i>
+                              </div>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                  {% endfor %}
+                  </div>
+                {% endif %}
               </div>
             </div>
           </div>
@@ -51,17 +74,33 @@
   <div class="bg-circle-2 bg-circle"></div>
   <div class="bg-circle-3 bg-circle"></div>
   <div class="bg-circle-4 bg-circle"></div>
-  <div class="row">
-  <div class="col-sm-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Special title treatment</h5>
-        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-        <a href="#" class="btn btn-primary">Go somewhere</a>
-      </div>
-    </div>
-  </div>
-</div>
 </header>
+<script type="text/javascript">
+    function follow_user(id) {
+        $.ajax(
+            {
+                type:'GET',
+                url: '/users/'+id+"/follow/",
+                error: function(){
+                    console.log('error');
+                },
+                success: function(data){
+                    let user_id = "#user-"+id;
+                    if(data.action==="follow"){
+                        $(user_id).removeClass("fa-user-minus");
+                        $(user_id).addClass("fa-user-plus");
+                        $(user_id).addClass("text-primary");
+                        $(user_id).removeClass("text-danger");
+                    }else{
+                        $(user_id).addClass("text-danger");
+                        $(user_id).removeClass("text-primary");
+                        $(user_id).removeClass("fa-user-plus");
+                        $(user_id).addClass("fa-user-minus");
+                    }
+                },
+            }
+        );
+    }
+</script>
 {% endblock content %}
 

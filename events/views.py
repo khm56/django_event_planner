@@ -8,6 +8,8 @@ from django.db.models import Q
 from django.http import JsonResponse
 from datetime import datetime, timedelta, timezone
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 
 def home(request):
     return render(request, 'home.html')
@@ -66,7 +68,8 @@ class Logout(View):
 
 def concert_list(request):
     present= datetime.now()
-    concerts = Concert.objects.filter(start_date__gte=present, start_time__gte=present)
+    concerts = Concert.objects.filter(start_date__gte=present)
+    users=User.objects.all()
     query = request.GET.get('q')
     if query:
         concerts = concerts.filter(
@@ -76,10 +79,17 @@ def concert_list(request):
             Q(concert_of__icontains=query)
         ).distinct()
 
+    follow_list = []
+    if request.user.is_authenticated:
+        follow_list = request.user.follower.all().values_list('following', flat=True)
     context = {
        "concerts": concerts,
+       "follow_list":follow_list,
+       "users":users,
     }
     return render(request, 'list.html', context)
+
+
 
 def profiles(request):
     users=User.objects.all()
@@ -120,6 +130,8 @@ def concert_detail(request, concert_id):
         AttendConcert.objects.create(quantity=quantity, user=request.user, concert=concerts)
         concerts.capacity = int(concerts.capacity) - int(quantity)
         concerts.save()
+        email = EmailMessage('Successfully Booked', 'You have succesffully booked for %s' %(concerts.name), to=[request.user.email])
+        email.send()
         return redirect('concert-dashboard')
 
     context = {
@@ -129,6 +141,7 @@ def concert_detail(request, concert_id):
     return render(request, 'concertdetail.html', context)
 
 def concert_create(request):
+    invitation=FollowedUser.objects.filter(following=request.user)
     if request.user.is_anonymous:
         return redirect('signin')
     form = ConcertForm()
@@ -138,6 +151,8 @@ def concert_create(request):
             concert = form.save(commit=False)
             concert.organizer = request.user
             concert.save()
+            email = EmailMessage('New Concert', 'Dont miss %s book quickly' %(concert.name), to=[user.follower.email for user in invitation])
+            email.send()
             return redirect('concert-dashboard')
     context = {
         "form":form,
@@ -181,7 +196,7 @@ def unbook(request, attend_id):
     booking_obj = AttendConcert.objects.get(user=request.user, id=attend_id)
     present=datetime.now()
     timeofevent=datetime.combine(booking_obj.concert.start_date, booking_obj.concert.start_time)
-    if (timeofevent- timedelta(hours=3)) <= present:
+    if (timeofevent - timedelta(hours=3)) >= present:
         concert= Concert.objects.get(id=booking_obj.concert.id)
         concert.capacity=int(concert.capacity)+int(booking_obj.quantity)
         concert.save()
@@ -190,4 +205,41 @@ def unbook(request, attend_id):
         messages.success(request, "It's too late to unbook")
     return redirect('concert-dashboard')
 
+def user_follow(request, user_id):
+    user_obj = User.objects.get(id=user_id)
+    if request.user.is_anonymous:
+        return redirect('login')
+    
+    followed, created = FollowedUser.objects.get_or_create(follower=request.user, following=user_obj)
+    if created:
+        action="follow"
+    else:
+        followed.delete()
+        action="unfollow"
+
+    response = {
+        "action": action,
+    }
+    return JsonResponse(response, safe=False)
+
+def followed_users(request):
+    if request.user.is_anonymous:
+        return redirect('login')
+    follow_list = request.user.follower.all().values_list('following', flat=True)
+    users = User.objects.filter(id__in=follow_list)
+    context = {
+        "users": users,
+    }
+    return render(request, 'followed_users.html', context)
+
+def organizer_detail(request, organizer_id):
+    organizer = User.objects.get(id=organizer_id)
+    concerts = Concert.objects.filter(organizer=organizer)
+    counter=concerts.count()
+    context = {
+        "organizer": organizer,
+        "concerts":concerts,
+        "counter":counter,
+    }
+    return render(request, 'organizerdetail.html', context)
 

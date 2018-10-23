@@ -15,4 +15,7 @@ urlpatterns = [
     # path('concert/<int:concert_id>/<int:quantity>/book/', views.concert_book, name='concert-book'),
     path('concert/<int:attend_id>/unbook/', views.unbook, name='concert-unbook'),
     path('profile/update/<int:profile_id>/', views.profile_update, name='profile-update'),
+    path('users/<int:user_id>/follow/',views.user_follow ,name='user-follow'),
+    path('users/followed/',views.followed_users ,name='followed-users'),
+    path('organizer/detail/<int:organizer_id>',views.organizer_detail ,name='organizer-detail'),
 ]
