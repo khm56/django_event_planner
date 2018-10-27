@@ -1,26 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-<br>
-<br>
-<header class="masthead text-center text-white">
-  <div class="masthead-content">
-    <div class="container">
-      <h1 class="masthead-heading mb-0">Looking for a Concert,</h1>
-      <h2 class="masthead-subheading mb-0">You're in the right place...</h2>
-      {% if request.user.is_anonymous %}
-        <a href="{% url 'signup' %}" class="btn btn-primary btn-xl rounded-pill mt-5">Sign up to find events!</a>
-      {% else %}
-        <a href="{% url 'concert-list' %}" class="btn btn-primary btn-xl rounded-pill mt-5">Find Concerts!</a>
-      {% endif %}
+<header class="masthead text-center text-white d-flex mw-100 mh-100 fixed">
+  <div class="container my-auto">
+    <div class="row">
+      <div class="col-lg-10 mx-auto">
+        <h1 class="text-uppercase">
+          <strong>Looking for a Concert, You're in the right place...</strong>
+        </h1>
+        <hr>
+      </div>
+      <div class="col-lg-8 mx-auto">
+        <p class="text-light mb-5">Concerts' Organizers and Concerts at you finger tips all you have to do is</p>
+        {% if request.user.is_anonymous %}
+          <a class="btn btn-primary btn-xl js-scroll-trigger"  href="{% url 'signup' %}">Sign up to find Concerts!</a>
+        {% else %}
+          <a class="btn btn-primary btn-xl js-scroll-trigger"  href="{% url 'concert-list' %}">Find Concerts!</a>
+        {% endif %}
+      </div>
     </div>
   </div>
-  <div class="bg-circle-1 bg-circle"></div>
-  <div class="bg-circle-2 bg-circle"></div>
-  <div class="bg-circle-3 bg-circle"></div>
-  <div class="bg-circle-4 bg-circle"></div>
+  <br>
+  <br>
+  <br>
 </header>
-
-
-
 {% endblock %}

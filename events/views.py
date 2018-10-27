@@ -14,6 +14,9 @@ from django.core.mail import EmailMessage
 def home(request):
     return render(request, 'home.html')
 
+def test(request):
+    return render(request, 'test.html')
+
 class Signup(View):
     form_class = UserSignup
     template_name = 'signup.html'
@@ -104,7 +107,8 @@ def concert_dashboard(request):
     concerts = Concert.objects.filter(organizer=request.user)
     attending = AttendConcert.objects.filter(user=request.user).filter(Q(concert__start_date__gte=present))
     attended = AttendConcert.objects.filter(user=request.user).filter(Q(concert__start_date__lt=present))
-
+    follow_list = request.user.following.all().values_list('follower', flat=True)
+    users = User.objects.filter(id__in=follow_list)
     query = request.GET.get('q')
     if query:
         concerts = concerts.filter(
@@ -113,12 +117,25 @@ def concert_dashboard(request):
             Q(description__icontains=query)|
             Q(concert_of__icontains=query)
         ).distinct()
+        attending = attending.filter(
+            Q(concert__organizer__username__icontains=query)|
+            Q(concert__name__icontains=query)|
+            Q(concert__description__icontains=query)|
+            Q(concert__concert_of__icontains=query)
+        ).distinct()
+        attended = attended.filter(
+            Q(concert__organizer__username__icontains=query)|
+            Q(concert__name__icontains=query)|
+            Q(concert__description__icontains=query)|
+            Q(concert__concert_of__icontains=query)
+        ).distinct()
 
 
     context = {
        "concerts": concerts,
        "attending": attending,
        "attended": attended,
+       "users" : users,
     }
     return render(request, 'dashboard.html', context)
 
@@ -227,14 +244,22 @@ def followed_users(request):
         return redirect('login')
     follow_list = request.user.follower.all().values_list('following', flat=True)
     users = User.objects.filter(id__in=follow_list)
+    query = request.GET.get('q')
+    if query:
+        users = users.filter(
+            Q(username__icontains=query)|
+            Q(id__icontains=query)
+        ).distinct()
+
     context = {
         "users": users,
     }
     return render(request, 'followed_users.html', context)
 
 def organizer_detail(request, organizer_id):
+    present=datetime.now()
     organizer = User.objects.get(id=organizer_id)
-    concerts = Concert.objects.filter(organizer=organizer)
+    concerts = Concert.objects.filter(organizer=organizer).filter(Q(start_date__gte=present))
     counter=concerts.count()
     context = {
         "organizer": organizer,

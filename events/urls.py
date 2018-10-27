@@ -4,6 +4,7 @@ from events import views
 
 urlpatterns = [
 	path('', home, name='home'),
+    path('test/', views.test, name='test'),
     path('signup/', Signup.as_view(), name='signup'),
     path('login/', Login.as_view(), name='login'),
     path('logout/', Logout.as_view(), name='logout'),

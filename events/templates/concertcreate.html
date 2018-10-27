@@ -1,25 +1,23 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Create Concert{% endblock title %}
-
 {% block content %}
-<header class="masthead text-center text-white">
-  <div class="masthead-content">
-    <div class="container">
-        <div class="jumbotron">
-          <h2 class="masthead-subheading mb-0">Add Concert</h2>    
+<header class="masthead">
+  <div class="text-center text-white d-flex">
+  <div class="container">
+    <div class="row"  >
+      <div class="col-lg-6 mx-auto" >
+          <h1 class="masthead-subheading mb-0">
+            <strong>Add Concert</strong>
+          </h1>    
           <form action="{% url 'concert-create' %}" method="POST" enctype="multipart/form-data">
               {% csrf_token %}
               {{form|crispy}}
               <input type="submit" value="Create" class="btn btn-outline-success">
           </form>
-        </div>
+      </div>
     </div>
   </div>
-  <div class="bg-circle-1 bg-circle"></div>
-  <div class="bg-circle-2 bg-circle"></div>
-  <div class="bg-circle-3 bg-circle"></div>
-  <div class="bg-circle-4 bg-circle"></div>
+  </div>
 </header>
 {% endblock content %}

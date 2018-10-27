@@ -7,9 +7,9 @@ class Concert(models.Model):
     description = models.TextField()
     start_date = models.DateField()
     start_time = models.TimeField()
-    end_time = models.TimeField()
     concert_of = models.CharField(max_length=120)
     capacity = models.IntegerField()
+    image=models.ImageField(upload_to='concert_images', null=True, blank=True)
 
     def remaining(self):
         allobjects= AttendConcert.objects.filter(concert=self)

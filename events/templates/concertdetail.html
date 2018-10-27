@@ -1,92 +1,95 @@
 {% extends "base.html" %}
 
-{% block title %}{{concert.name}} Detail{% endblock title %}
-
 {% block content %}
 
-<br>
-<br>
-<br>
-<br>
-<header class="masthead text-center text-black">
-	<div class="masthead-content">
-		<div class="container">
-			<div class="jumbotron">
-				<h2 class="masthead-subheading text-white mb-0">{{concert.name}}'s Details</h2>
-				<div class="card">
-					<h5 class="card-header dark">Concert Info</h5>
-					<div class="card-body">
-						<h5 class="card-title">{{concert.name}}</h5>
-						<p class="card-text">Organized by: {{concert.organizer.username}}</p>
-						<p class="card-text">Concert of: {{concert.concert_of}}</p>
-						<p class="card-text">Capacity Left: {{concert.capacity}}</p>
-						<p class="card-text">{{concert.description|linebreaks}}</p>
-						<p class="card-text">Date: {{concert.start_date}}</p>
-						<p class="card-text">Starting Time: {{concert.start_time}}</p>
-						<p class="card-text">Ending Time: {{concert.end_time}}</p>
-						<div class="row">
-							{% if request.user == concert.organizer %}
-								<div class="col-sm">
-								</div>
-								<div class="col-sm">
-									<a href="{% url 'concert-update' concert.id %}" class="btn btn-outline-primary btn-block">Update</a>
-								</div>
-								<div class="col-sm">
-								</div>
-									<br>
-							{% endif %}
-						</div>
-							<div class="row">
-								{% if request.user.is_authenticated %}
-									<div class="col-sm">
-									</div>
-									<div class="col-sm">
-										<form action="{% url 'concert-detail' concert.id %}" method="POST">
-											{% csrf_token %}
-											<br>Tickets:<input class="mb-3" type="number" name="quantity" max="{{concert.capacity}}">
-											{% if not concert.capacity == 0 %}
-												<br><button type="submit"  class="btn btn-outline-primary btn-block">Book</button>
-											{% else %}
-												<h3 style="color:red" >FULL!!</h3>
-											{% endif %}
-										</form>
-									</div>
-									<div class="col-sm">
-									</div>
-								{% endif %}
-								<br>
-							</div>
-							<br>
-							{% if request.user == concert.organizer %}
-								<div class="row">
-									<table class="table table-dark">
-										<thead>
-											<tr>
-												<th scope="col">#ID</th>
-												<th scope="col">Username</th>
-												<th scope="col">Quantity of Tickets</th>
-											</tr>
-										</thead>
-										<tbody>
-											{% for book in booked %}
-												<tr>
-													<td><a href="{% url 'concert-detail' book.concert.id %}">{{book.user.id}}</a></td>
-													<td><a href="{% url 'concert-detail' book.concert.id %}">{{book.user.username}}</a></td>
-													<td><a href="{% url 'concert-detail' book.concert.id %}">{{book.quantity}}</a></td>
-												</tr>
-											{% endfor %}
-										</tbody>
-									</table>
-								</div>
-						{% endif %}
-						</div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top" id="sideNav">
+      <a class="navbar-brand js-scroll-trigger" href="#page-top">
+        <span class="d-block d-lg-none"></span>
+        <span class="d-none d-lg-block">
+        	{% if concert.image %}
+              <img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="{{concert.image.url}}" alt="">
+            {% else %}
+              <img class="img-fluid img-profile rounded-circle mx-auto mb-2" src="../static/img/portfolio/thumbnails/1.jpg" alt="">
+            {% endif %}
+        </span>
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      </div>
+</nav>
+
+
+<header class="masthead">
+  <div class="text-center text-white d-flex">
+  <div class="container">
+	<div class="row"  >
+	  <div class="col-lg-12 mx-auto" >
+		  <h1 class="detailo masthead-subheading mb-0" style="font-family:georgia">
+			<strong>Concert Details</strong>
+		  </h1> 
+
+	 <section class="resume-section p-3 p-lg-5 d-flex d-column" id="about">
+		<div class="my-auto">
+		  <h1 class="mb-0">Concert Name
+			<span class="text-primary">{{concert.name}}</span>
+		  </h1>
+		  <div class="subheading mb-5" style="font-size:2rem"><strong>Concert of:</strong> {{concert.concert_of}}
+			<a href="{% url 'organizer-detail' concert.organizer.id %}" style="font-size:2rem"><strong>Organized by:</strong> {{concert.organizer.username}}</a>
+		  </div>
+		  <p class="lead mb-5"><strong>Capacity Left:</strong> {{concert.capacity}}</p>
+		  <p class="lead mb-5"><strong>Date:</strong> {{concert.start_date}}</p>
+		  <p class="lead mb-5"><strong>Starting Time:</strong> {{concert.start_time}}</p>
+		  {% if request.user == concert.organizer %}
+			<div class="col-sm">
 			</div>
+			<div class="col-sm">
+				<a href="{% url 'concert-update' concert.id %}" class="btn btn-outline-light btn-block" style="font-size:2rem">Update</a>
 			</div>
-		</div>
+			<div class="col-sm">
+			</div>
+				<br>
+		  {% endif %}
+
+		  <form action="{% url 'concert-detail' concert.id %}" method="POST">
+			{% csrf_token %}
+			{% if not concert.capacity == 0 %}
+				<br><h3><strong>Tickets:</strong></h3><input class="mb-3" type="number" name="quantity" max="{{concert.capacity}}">
+				<br><button type="submit"  class="btn btn-outline-light btn-block"><span class="text-primary" style="font-size:2rem">Book</span></button>
+			{% else %}
+				<h3 style="color:red" >FULL!!</h3>
+			{% endif %}
+		   </form>
+
+		   <section id="services">
+	        <div class="container">
+	          {% if request.user.is_authenticated %}
+	          <div class="row">
+	            {% for book in booked %}
+	            <div class="col-lg-3 col-md-6 text-center">
+	              <div class="service-box mt-5 mx-auto">
+	                  <i id="user-{{user.id}}"
+	                            class="fas fa-4x text-light mb-3 sr-icon-1 fa-user"></i>
+	                  <p class=" card text-light bg-primary mb-3">Username: </p><h3 class="card text-primary mb-3">{{book.user.username}}</h3>
+	                  <p class="card text-light bg-primary mb-3">Quantity of Tickets: {{book.quantity}}</p>
+	              </div>
+	            </div>
+	            {% endfor %}
+	          </div>
+	        {% endif %}
+	      </div>
+	     </section>
+
+	  </div>
 	</div>
-	<div class="bg-circle-1 bg-circle"></div>
-	<div class="bg-circle-2 bg-circle"></div>
-	<div class="bg-circle-3 bg-circle"></div>
-	<div class="bg-circle-4 bg-circle"></div>
+	</section>
+
+			</div>
+		  </div>
+		</div>
+		</div>
 </header>
+
+
 {% endblock content %}
